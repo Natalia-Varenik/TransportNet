@@ -46,7 +46,7 @@ class Model:
         return inds_to_nodes, correspondences, table
 
         
-    def find_equilibrium(self, solver_name = 'ustm', composite = True, solver_kwargs = {}, base_flows = None):
+    def find_equilibrium(self, solver_name = 'ustm', composite = True, solver_kwargs = {}, base_flows = None, t_start=None):
         if solver_name == 'fwm':
             solver_func = fwm.frank_wolfe_method
             starting_msg = 'Frank-Wolfe method...'
@@ -94,15 +94,21 @@ class Model:
         print('Oracles created...')
         print(starting_msg)
         
+        if t_start is None:
+            t_start = self.graph.freeflow_times
+            print('Free flow times are used as t_start...')
+        else:
+            print('Given point is used as t_start...')
+        
         if solver_name == 'fwm':
             result = solver_func(oracle,
                                  primal_dual_calculator, 
-                                 t_start = self.graph.freeflow_times,
+                                 t_start = t_start,
                                  **solver_kwargs)
         else:
             result = solver_func(oracle, prox,
                                  primal_dual_calculator, 
-                                 t_start = self.graph.freeflow_times,
+                                 t_start = t_start,
                                  **solver_kwargs)
         #getting travel times of every non-zero trips between zones:
         result['zone travel times'] = {}
